@@ -19,6 +19,7 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -48,12 +49,14 @@ public class CameraView extends Activity {
 	      }
 	    });
 	    
-	    //adding the outside edges
+	    //adding the outside edges and arrow
 	    ImageView north = (ImageView)findViewById(R.id.overlay_north);
 	    ImageView east = (ImageView)findViewById(R.id.overlay_east);
 	    ImageView south = (ImageView)findViewById(R.id.overlay_south);
 	    ImageView west = (ImageView)findViewById(R.id.overlay_west); 
 	    ImageView arrow = (ImageView)findViewById(R.id.overlay_arrow);
+	    // these need to be added last to be overlaid on top of the preview
+	    // easier to build in xml, but can't add the same view twice.
 	    previewFrame.removeView(north);
 	    previewFrame.removeView(east);
 	    previewFrame.removeView(south);
@@ -106,8 +109,11 @@ public class CameraView extends Activity {
 		}
 	};
 	
-	private void flashArrow (int direction) {
-		
+	/**
+	 * Flashes arrow.png on the screen to show user which way to turn next
+	 * @param direction 0 for up, 1 for right, 2 for bottom, 3 for left
+	 */
+	private void flashArrow (int direction) {	
 		Bitmap bm = BitmapFactory.decodeResource(getResources(), 
 				R.drawable.arrow);
 		int width = bm.getWidth();
@@ -115,10 +121,7 @@ public class CameraView extends Activity {
 		Matrix matrix = new Matrix();
 		matrix.postScale(0.75f, 0.75f);
 		
-		// 1 makes arrow point right
-		// 2 makes arrow point bottom
-		// 3 makes arrow point left
-		// arrow points up otherwise
+		// arrow is originally up
 		switch(direction) {
 		case 1:
 			matrix.postRotate(90);
@@ -135,13 +138,22 @@ public class CameraView extends Activity {
 		BitmapDrawable bmdrawable = new BitmapDrawable(newbm);
 	
 		ImageView arrow = (ImageView)findViewById(R.id.overlay_arrow);
-		arrow.setImageDrawable(bmdrawable);		
+		arrow.setImageDrawable(bmdrawable);
 		
 		Animation fade = AnimationUtils.loadAnimation(this,
-                R.anim.fade);	
-		//Animation fadeout = AnimationUtils.loadAnimation(this,
-        //        R.anim.fadeout);
+                R.anim.fade);
 		arrow.startAnimation(fade);
-		//arrow.startAnimation(fadeout);
+		final ImageView arrowf = arrow;
+		fade.setAnimationListener(new AnimationListener() {
+			public void onAnimationEnd(Animation animation) {
+				arrowf.setImageDrawable(null);
+			}
+
+			public void onAnimationRepeat(Animation animation) {
+			}
+
+			public void onAnimationStart(Animation animation) {
+			}
+		});		
 	}
 }
