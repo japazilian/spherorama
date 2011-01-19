@@ -86,18 +86,18 @@ public class CameraView extends Activity {
 	};
 
 	// Handles data for jpeg picture
-	PictureCallback jpegCallback = new PictureCallback() { // <8>
+	PictureCallback jpegCallback = new PictureCallback() {
 		public void onPictureTaken(byte[] data, Camera camera) {
 			FileOutputStream outStream = null;
 			try {
 				// Write to SD Card
 				outStream = new FileOutputStream(String.format("/sdcard/%d.jpg",
-						System.currentTimeMillis())); // <9>
+						System.currentTimeMillis()));
 				//TODO put back in 
 				//outStream.write(data);
 				outStream.close();
 				Log.d(TAG, "onPictureTaken - wrote bytes: " + data.length);
-			} catch (FileNotFoundException e) { // <10>
+			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -106,8 +106,13 @@ public class CameraView extends Activity {
 			Log.d(TAG, "onPictureTaken - jpeg");
 			preview.camera.startPreview();
 			flashArrow(3);
+			buildPictureOverlay();
 		}
 	};
+	
+	private void buildPictureOverlay() {
+		
+	}
 	
 	/**
 	 * Flashes arrow.png on the screen to show user which way to turn next
