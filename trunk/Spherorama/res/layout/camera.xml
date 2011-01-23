@@ -12,34 +12,37 @@
       <ImageView
       android:id="@+id/overlay_north"
       android:layout_width="fill_parent"
-      android:layout_height="50dip" 
-      android:background="#AAFF0000"/>      
+      android:layout_height="50dip" />
+<!--      android:background="#AAFF0000"/>      -->
     
       <ImageView
       android:id="@+id/overlay_east"
       android:layout_width="50dip"
       android:layout_height="fill_parent" 
-      android:layout_gravity="right" 
-      android:background="#AAFF0000"/>      
+      android:layout_gravity="right"/>      
     
       <ImageView
       android:id="@+id/overlay_south"
       android:layout_width="fill_parent"
       android:layout_height="50dip" 
-      android:layout_gravity="bottom" 
-      android:background="#AAFF0000"/>      
+      android:layout_gravity="bottom"/>      
 
       <ImageView
       android:id="@+id/overlay_west"
       android:layout_width="50dip"
-      android:layout_height="fill_parent" 
-      android:background="#AAFF0000"/>  
+      android:layout_height="fill_parent" />  
       
       <ImageView
       android:id="@+id/overlay_arrow"
       android:layout_width="fill_parent"
       android:layout_height="fill_parent"
-      android:scaleType="center"/>     
+      android:scaleType="center"/>
+      
+      <ImageView
+      android:id="@+id/overlay_prev_img"
+      android:layout_width="fill_parent"
+      android:layout_height="fill_parent"
+      android:scaleType="fitXY"/>    
     
   </FrameLayout>
 
