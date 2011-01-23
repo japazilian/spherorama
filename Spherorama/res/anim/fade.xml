@@ -7,7 +7,7 @@
        android:fromAlpha="0.0" 
        android:toAlpha="1.0" 
        android:duration="750"
-       android:repeatCount="2" /><!--
+       android:repeatCount="1" /><!--
     <alpha
        android:fromAlpha="1.0" 
        android:toAlpha="0.0"

@@ -28,6 +28,9 @@ public class CameraView extends Activity {
 	
 	private static final String TAG = "CameraDemo";
 	private Preview preview;
+	private ImageView north, east, south, west, arrow, prev_img;
+	private Sphere sphere;
+	private String whitebalance;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -50,24 +53,30 @@ public class CameraView extends Activity {
 	    });
 	    
 	    //adding the outside edges and arrow
-	    ImageView north = (ImageView)findViewById(R.id.overlay_north);
-	    ImageView east = (ImageView)findViewById(R.id.overlay_east);
-	    ImageView south = (ImageView)findViewById(R.id.overlay_south);
-	    ImageView west = (ImageView)findViewById(R.id.overlay_west); 
-	    ImageView arrow = (ImageView)findViewById(R.id.overlay_arrow);
+	    north = (ImageView)findViewById(R.id.overlay_north);
+	    east = (ImageView)findViewById(R.id.overlay_east);
+	    south = (ImageView)findViewById(R.id.overlay_south);
+	    west = (ImageView)findViewById(R.id.overlay_west); 
+	    arrow = (ImageView)findViewById(R.id.overlay_arrow);
+	    prev_img = (ImageView)findViewById(R.id.overlay_prev_img);
+	    prev_img.setAlpha(0x99);
 	    // these need to be added last to be overlaid on top of the preview
-	    // easier to build in xml, but can't add the same view twice.
+	    // easier to build in xml, but can't add the same view twice
+	    previewFrame.removeView(prev_img);
 	    previewFrame.removeView(north);
 	    previewFrame.removeView(east);
 	    previewFrame.removeView(south);
 	    previewFrame.removeView(west);
 	    previewFrame.removeView(arrow);
+	    previewFrame.addView(prev_img);
 	    previewFrame.addView(north);
 	    previewFrame.addView(east);
 	    previewFrame.addView(south);
 	    previewFrame.addView(west);
 	    previewFrame.addView(arrow);
-	
+	    
+	    sphere = new Sphere();
+	    whitebalance = null;
 	    Log.d(TAG, "onCreate'd");
 	}
 
@@ -79,7 +88,7 @@ public class CameraView extends Activity {
 	};
 
 	// Handles data for raw picture
-	PictureCallback rawCallback = new PictureCallback() { // <7>
+	PictureCallback rawCallback = new PictureCallback() { 
 		public void onPictureTaken(byte[] data, Camera camera) {
 			Log.d(TAG, "onPictureTaken - raw");
 		}
@@ -104,13 +113,32 @@ public class CameraView extends Activity {
 			} finally {
 			}
 			Log.d(TAG, "onPictureTaken - jpeg");
+			Log.d(TAG, camera.getParameters().getWhiteBalance());
 			preview.camera.startPreview();
 			flashArrow(3);
-			buildPictureOverlay();
+			pictureOverlay(data);
 		}
 	};
 	
-	private void buildPictureOverlay() {
+	private void pictureOverlay(byte[] data) {
+		Bitmap bm = BitmapFactory.decodeByteArray(data, 0, data.length);
+		prev_img.setImageBitmap(bm);
+		Animation move = AnimationUtils.loadAnimation(this,
+                R.anim.move_right);
+		prev_img.startAnimation(move);
+		move.setAnimationListener(new AnimationListener() {
+			public void onAnimationEnd(Animation animation) {
+				prev_img.offsetLeftAndRight(450);
+			}
+
+			public void onAnimationRepeat(Animation animation) {
+			}
+
+			public void onAnimationStart(Animation animation) {
+			}
+		});	
+		//east.setAlpha(0xAA);
+		//east.setImageBitmap(bm);
 		
 	}
 	
@@ -142,7 +170,7 @@ public class CameraView extends Activity {
 				width, height, matrix, true);
 		BitmapDrawable bmdrawable = new BitmapDrawable(newbm);
 	
-		ImageView arrow = (ImageView)findViewById(R.id.overlay_arrow);
+		//ImageView arrow = (ImageView)findViewById(R.id.overlay_arrow);
 		arrow.setImageDrawable(bmdrawable);
 		
 		Animation fade = AnimationUtils.loadAnimation(this,
