@@ -1,9 +1,5 @@
 package edu.purdue.spherorama;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -30,7 +26,6 @@ public class CameraView extends Activity {
 	private Preview preview;
 	private ImageView north, east, south, west, arrow, prev_img;
 	private Sphere sphere;
-	private String whitebalance;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -44,42 +39,58 @@ public class CameraView extends Activity {
 	    setContentView(R.layout.camera);
 	
 	    preview = new Preview(this);
+	    
 	    FrameLayout previewFrame = (FrameLayout)findViewById(R.id.preview);
 	    previewFrame.addView(preview); 
 	    preview.setOnClickListener(new OnClickListener() {
 	      public void onClick(View v) {
-	        preview.camera.takePicture(shutterCallback, rawCallback, jpegCallback);
+	    	preview.camera.autoFocus(autofocusCallback);
 	      }
 	    });
 	    
-	    //adding the outside edges and arrow
-	    north = (ImageView)findViewById(R.id.overlay_north);
+	    //adding the outside edges, arrow, and previous image's overlay
+	    /*north = (ImageView)findViewById(R.id.overlay_north);
 	    east = (ImageView)findViewById(R.id.overlay_east);
 	    south = (ImageView)findViewById(R.id.overlay_south);
-	    west = (ImageView)findViewById(R.id.overlay_west); 
+	    west = (ImageView)findViewById(R.id.overlay_west); */
 	    arrow = (ImageView)findViewById(R.id.overlay_arrow);
 	    prev_img = (ImageView)findViewById(R.id.overlay_prev_img);
 	    prev_img.setAlpha(0x99);
 	    // these need to be added last to be overlaid on top of the preview
 	    // easier to build in xml, but can't add the same view twice
 	    previewFrame.removeView(prev_img);
-	    previewFrame.removeView(north);
+	    /*previewFrame.removeView(north);
 	    previewFrame.removeView(east);
 	    previewFrame.removeView(south);
-	    previewFrame.removeView(west);
+	    previewFrame.removeView(west);*/
 	    previewFrame.removeView(arrow);
 	    previewFrame.addView(prev_img);
-	    previewFrame.addView(north);
+	    /*previewFrame.addView(north);
 	    previewFrame.addView(east);
 	    previewFrame.addView(south);
-	    previewFrame.addView(west);
+	    previewFrame.addView(west);*/
 	    previewFrame.addView(arrow);
 	    
 	    sphere = new Sphere();
-	    whitebalance = null;
 	    Log.d(TAG, "onCreate'd");
 	}
 
+	@Override
+	protected void onPause() {
+		prev_img.setImageDrawable(null);
+		super.onPause();
+	}
+
+	// Called when camera autofocuses
+	Camera.AutoFocusCallback autofocusCallback = new Camera.AutoFocusCallback() {
+		public void onAutoFocus(boolean success, Camera camera) {
+			if(success) {
+		        preview.camera.takePicture(shutterCallback, 
+		        		rawCallback, jpegCallback);
+			}
+		}
+	};
+	
 	// Called when shutter is opened
 	ShutterCallback shutterCallback = new ShutterCallback() {
 		public void onShutter() {
@@ -97,13 +108,14 @@ public class CameraView extends Activity {
 	// Handles data for jpeg picture
 	PictureCallback jpegCallback = new PictureCallback() {
 		public void onPictureTaken(byte[] data, Camera camera) {
-			FileOutputStream outStream = null;
+			//TODO put back in 
+			/*FileOutputStream outStream = null;
 			try {
 				// Write to SD Card
 				outStream = new FileOutputStream(String.format("/sdcard/%d.jpg",
 						System.currentTimeMillis()));
-				//TODO put back in 
-				//outStream.write(data);
+				
+				outStream.write(data);
 				outStream.close();
 				Log.d(TAG, "onPictureTaken - wrote bytes: " + data.length);
 			} catch (FileNotFoundException e) {
@@ -111,7 +123,7 @@ public class CameraView extends Activity {
 			} catch (IOException e) {
 				e.printStackTrace();
 			} finally {
-			}
+			}*/
 			Log.d(TAG, "onPictureTaken - jpeg");
 			Log.d(TAG, camera.getParameters().getWhiteBalance());
 			preview.camera.startPreview();
