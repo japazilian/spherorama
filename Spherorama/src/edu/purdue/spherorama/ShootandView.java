@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -17,7 +18,8 @@ import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.ShutterCallback;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
-import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,42 +31,41 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.Toast;
-/**
- * Our OpenGL program's main activity
- */
+
 public class ShootandView extends Activity {
    
    private GLSurfaceView glView;   // Use GLSurfaceView
    private CamLayer mPreview;
+   private Context ctx;
+   private Button shootButton;
+   private String name;
+   private ProgressDialog dialog;
    
    @Override
-public boolean onCreateOptionsMenu(Menu menu) {
+   public boolean onCreateOptionsMenu(Menu menu) {
 	   MenuInflater inflater = getMenuInflater();
-	    inflater.inflate(R.layout.menu, menu);
-	    return true;
-}
+	   inflater.inflate(R.layout.menu, menu);
+	   return true;
+   }
 
-@Override
-public boolean onOptionsItemSelected(MenuItem item) {
-	// TODO Auto-generated method stub
-	 switch (item.getItemId()) {
-	    case R.id.menu_shoot:
-	    	((MyGLSurfaceView) glView).changeMode(1);
-	    	shootButton.setVisibility(View.VISIBLE);
-	        return true;
-	    case R.id.menu_view:
-	        ((MyGLSurfaceView) glView).changeMode(2);
-	        shootButton.setVisibility(View.GONE);
-	        return true;
-	    default:
-	        return super.onOptionsItemSelected(item);
-	    }
-}
+   @Override
+   public boolean onOptionsItemSelected(MenuItem item) {
+	   switch (item.getItemId()) {
+	   case R.id.menu_shoot:
+		   ((MyGLSurfaceView) glView).changeMode(1);
+		   shootButton.setVisibility(View.VISIBLE);
+		   return true;
+	   case R.id.menu_view:
+		   ((MyGLSurfaceView) glView).changeMode(2);
+		   shootButton.setVisibility(View.GONE);
+		   return true;
+	   case R.id.menu_done:
+		   this.finish();
+	   default:
+		   return super.onOptionsItemSelected(item);
+	   }
+	}
 
-private Context ctx;
-  private Button shootButton;
-   // Call back when the activity is started, to initialize the view
    @Override
    protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
@@ -72,49 +73,73 @@ private Context ctx;
       		WindowManager.LayoutParams.FLAG_FULLSCREEN);
   		// needs to be called before setContentView
   		requestWindowFeature(Window.FEATURE_NO_TITLE); 
+  		
       glView = new MyGLSurfaceView(this);           // Allocate a GLSurfaceView
-      //glView.setRenderer(new MyGLRenderer(this)); // Use a custom renderer
       this.setContentView(glView);                // This activity sets to GLSurfaceView
       mPreview = new CamLayer(this.getApplicationContext(), (PreviewCallback) glView);
       addContentView(mPreview, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
       
-      
+      ctx = this;
       
       //Adding location for button
       LinearLayout ll = new LinearLayout(this);
       ll.setGravity(Gravity.BOTTOM);
       ll.setHorizontalGravity(Gravity.CENTER);
       
-      ctx = this;
-      
       shootButton = new Button(this);
+      // Creating Button
       shootButton.setWidth(100);
       shootButton.setText("Shoot");
       shootButton.setOnClickListener(new OnClickListener() {
-	      public void onClick(View v) {
-	    	Toast.makeText(ctx, "click!", Toast.LENGTH_SHORT).show();
-	      }
-	    });
+    	  public void onClick(View v) {
+    		  if(shootButton.getText().toString().equals("Shoot")) {
+	    		  shootButton.setEnabled(false);
+	    		  mPreview.mCamera.autoFocus(autofocusCallback);
+    		  }
+    		  else {
+    			  ((MyGLSurfaceView)glView).resetCurImage();
+    			  shootButton.setText("Shoot");
+    		  }
+    	  }
+      });
+      
       ll.addView(shootButton);
       addContentView(ll, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
       
-
-      shootButton.setOnClickListener(new OnClickListener() {
-	      public void onClick(View v) {
-	    	mPreview.mCamera.autoFocus(autofocusCallback);
-	      }
-	    });
+     
+      // Get name of current sphere
+      name = this.getIntent().getStringExtra("name");
+      // Create dir
+      File sphereDir = new File("/sdcard/Spherorama/"+name+"/");
+      sphereDir.mkdirs();
+      
    }
    
-// Called when camera autofocuses
-	Camera.AutoFocusCallback autofocusCallback = new Camera.AutoFocusCallback() {
+   Handler changeButtonHandler = new Handler(){
+	   @Override
+	   public void handleMessage(Message msg) {
+		   switch(msg.what){
+       	   case 1:
+       		   shootButton.setText("Shoot");
+               break;
+       	   case 2:
+       		   shootButton.setText("Re-Shoot");
+       		   break;
+	      }
+	   }
+   };
+   
+   // Called when camera autofocuses
+   Camera.AutoFocusCallback autofocusCallback = new Camera.AutoFocusCallback() {
 		public void onAutoFocus(boolean success, Camera camera) {
 			if(success) {
+  			  	dialog = ProgressDialog.show(ctx, "Working...", 
+                      "Capturing image. Please wait...", true);
 		        mPreview.mCamera.takePicture(shutterCallback, 
 		        		rawCallback, jpegCallback);
 			}
 		}
-	};
+   };
 	
 	// Called when shutter is opened
 	ShutterCallback shutterCallback = new ShutterCallback() {
@@ -132,10 +157,6 @@ private Context ctx;
 	
 	PictureCallback jpegCallback = new PictureCallback() {
 		public void onPictureTaken(byte[] data, Camera camera) {
-			//TODO put back in 
-			
-			
-			//Toast.makeText(ctx, ""+data.length, Toast.LENGTH_LONG).show();
 
 			Bitmap bitmapOrg = BitmapFactory.decodeByteArray(data, 0, data.length);
 			//1024x682 or 512x341
@@ -146,74 +167,29 @@ private Context ctx;
 			Canvas drawInMiddle = new Canvas(potBitmap);
 			drawInMiddle.drawBitmap(resizedBitmap, 0.0f, (512-341)/2, null);
 			resizedBitmap.recycle();
-			//Bitmap resizedBitmap2 = Bitmap.createScaledBitmap(resizedBitmap, 512, 512, true);
-			//resizedBitmap2.recycle();
 			
-			
-			
-			
-			
-			/*int width = bitmapOrg.getWidth();
-	        int height = bitmapOrg.getHeight();
-	        int newWidth = 512;
-	        int newHeight = 512;
-	       
-	        // calculate the scale - in this case = 0.4f
-	        float scaleWidth = ((float) newWidth) / width;
-	        float scaleHeight = ((float) newHeight) / height;
-	       
-	        // createa matrix for the manipulation
-	        Matrix matrix = new Matrix();
-	        // resize the bit map
-	        matrix.postScale(scaleWidth, scaleHeight);
-	        
-	        // recreate the new Bitmap
-	        Bitmap resizedBitmap = Bitmap.createBitmap(bitmapOrg, 0, 0,
-	                          width, height, matrix, true);*/
-	        
 	        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 	        potBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
 
+	        int lookingAt = ((MyGLSurfaceView)glView).renderer.cube.lookingAt;
 	        //you can create a new file name "test.jpg" in sdcard folder.
-	        File f = new File(Environment.getExternalStorageDirectory()
-	                                + File.separator + "test.jpg");
+	        File f = new File("/sdcard/Spherorama/"+name+"/"+lookingAt+".jpg");
 	        try {
 				f.createNewFile();
 				//write the bytes in file
 				FileOutputStream fo = new FileOutputStream(f);
 				fo.write(bytes.toByteArray());
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 	   
-	       //byte[] orig = resizedBitmap.
-			/*FileOutputStream outStream = null;
-			try {
-				// Write to SD Card
-				outStream = new FileOutputStream(String.format("/sdcard/%d.jpg",
-						System.currentTimeMillis()));
-				
-				outStream.write(data);
-				outStream.close();
-				//Log.d(TAG, "onPictureTaken - wrote bytes: " + data.length);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} finally {
-			}*/
 			((MyGLSurfaceView) glView).newImage(potBitmap);
 			mPreview.mCamera.startPreview();
-			
-			/*Log.d(TAG, "onPictureTaken - jpeg");
-			Log.d(TAG, camera.getParameters().getWhiteBalance());
-			
-			flashArrow(3);
-			pictureOverlay(data);*/
+			shootButton.setText("Re-Shoot");
+			shootButton.setEnabled(true);
+			dialog.cancel();
 		}
 	};
    
