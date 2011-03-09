@@ -14,22 +14,17 @@ import android.widget.Button;
 public class MyGLRenderer implements GLSurfaceView.Renderer, PreviewCallback {
 
 	private Context context;   // Application context needed to read image (NEW)
-	   public Octogon cube;
-	   public  float angleX = 0;     // rotational angle in degree for cube
-	   public  float angleY = 0;
-	   //private static float speedCube = -1.5f; // rotational speed for cube
-	   
-	   
-	   
-	   private float startTime = 0;
-	   public GL10 gl;
-	   Button shootButton;
-	   // Constructor
-	   public MyGLRenderer(Context context) {
-	      this.context = context;   // Get the application context (NEW)
-	      cube = new Octogon(context);
-	      
-	   }
+	public Octogon cube;
+	public  float angleX = 0;     // rotational angle in degree for cube
+	public  float angleY = 0;
+	private float startTime = 0;
+	public GL10 gl;
+   	// Constructor
+	public MyGLRenderer(Context context) {
+		this.context = context;   // Get the application context (NEW)
+		cube = new Octogon(context);
+      
+	}
 	  
 	   // Call back when the surface is first created or re-created.
 	   public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -68,67 +63,53 @@ public class MyGLRenderer implements GLSurfaceView.Renderer, PreviewCallback {
 	  
 	      gl.glMatrixMode(GL10.GL_MODELVIEW);  // Select model-view matrix
 	      gl.glLoadIdentity();                 // Reset
-	      
-	      // You OpenGL|ES display re-sizing code here
-	      // ......
+
 	   }
 	   
 	   // Call back to draw the current frame.
 	   public void onDrawFrame(GL10 gl) {
 		   // Clear color and depth buffers
-		      gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
-		      
-		      // ----- Render the Cube -----
-		      gl.glLoadIdentity();                  // Reset the current model-view matrix
-		      gl.glTranslatef(0.0f, 0.0f, 0.5f);   // Translate into the screen
-		      gl.glRotatef(angleX, 0.0f, 1.0f, 0.0f); // Rotate
-		      Log.d("GLRend", ""+angleX);
-		      gl.glRotatef(angleY, 1.0f , 0.0f , 0.0f ); // Rotate
-		      cube.draw(gl);
-		      // Update the rotational angle after each refresh.
-		      //angleCube += speedCube;
-		   }
+	      gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
+	      
+	      // ----- Render the Cube -----
+	      gl.glLoadIdentity();                  // Reset the current model-view matrix
+	      gl.glTranslatef(0.0f, 0.0f, 0.5f);   // Translate into the screen
+	      gl.glRotatef(angleX, 0.0f, 1.0f, 0.0f); // Rotate
+	      Log.d("GLRend", ""+angleX);
+	      gl.glRotatef(angleY, 1.0f , 0.0f , 0.0f ); // Rotate
+	      cube.draw(gl);
+	      // Update the rotational angle after each refresh.
+	      //angleCube += speedCube;
+	   }
 
 	public void onPreviewFrame(byte[] data, Camera camera) {
-		// TODO Auto-generated method stub
 		cube.onPreviewFrame(data, camera);
 	}
 
 	public void animateLeft() {
-		// TODO Auto-generated method stub
 		//cube.lookingAt = (cube.lookingAt-1)%8; isn't working for some reason
 		cube.lookingAt--;
 		if(cube.lookingAt == -1)
 			cube.lookingAt = 7;
+		if(cube.hasPicture[cube.lookingAt])
+			((ShootandView)context).changeButtonHandler.sendEmptyMessage(2);
+		else
+			((ShootandView)context).changeButtonHandler.sendEmptyMessage(1);
 		
 	}
 
 	public void animateRight() {
-		// TODO Auto-generated method stub
 		cube.lookingAt = (cube.lookingAt+1)%8;
+		if(cube.hasPicture[cube.lookingAt])
+			((ShootandView)context).changeButtonHandler.sendEmptyMessage(2);
+		else
+			((ShootandView)context).changeButtonHandler.sendEmptyMessage(1);
 	}
 
 	public void resetView() {
-		// TODO Auto-generated method stub
 		this.angleX = 0.0f;
 		this.angleY = 0.0f;
 		cube.lookingAt = 0;
 		
 	}
-
-	/*public void animateLeft() {
-		// TODO Auto-generated method stub
-		Animate a = new Animate(1);
-		a.start();
-				
-	}
-
-	public void animateRight() {
-		// TODO Auto-generated method stub
-		Animate a = new Animate(2);
-		a.start();
-		
-	}
-	*/
-	
 }

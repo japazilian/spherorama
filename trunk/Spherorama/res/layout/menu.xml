@@ -6,4 +6,7 @@
     <item android:id="@+id/menu_view"
           android:icon="@android:drawable/ic_menu_view"
           android:title="View" />
+    <item android:id="@+id/menu_done"
+          android:icon="@android:drawable/ic_menu_close_clear_cancel"
+          android:title="Done" />
 </menu>

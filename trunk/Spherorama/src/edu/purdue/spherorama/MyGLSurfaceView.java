@@ -2,7 +2,6 @@ package edu.purdue.spherorama;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.opengl.GLSurfaceView;
 import android.os.SystemClock;
@@ -12,6 +11,7 @@ import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 /*
  * Custom GL view by extending GLSurfaceView so as
@@ -32,7 +32,7 @@ Camera.PreviewCallback, Camera.PictureCallback {
    static Context ctx;
    GestureDetector gestureDetector;
    View.OnTouchListener gestureListener;
-
+   public Button shootButton;
    // Constructor - Allocate and set the renderer
    public MyGLSurfaceView(Context context) {
       super(context);
@@ -155,11 +155,11 @@ class MyGestureDetector extends SimpleOnGestureListener {
                 return false;
             // right to left swipe
             if(e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-                Toast.makeText(ctx, "Left Swipe", Toast.LENGTH_SHORT).show();
+                // Toast.makeText(ctx, "Left Swipe", Toast.LENGTH_SHORT).show();
                 Animate a = new Animate(1);
                 a.start();
             }  else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-                Toast.makeText(ctx, "Right Swipe", Toast.LENGTH_SHORT).show();
+                // Toast.makeText(ctx, "Right Swipe", Toast.LENGTH_SHORT).show();
                 Animate a = new Animate(2);
                 a.start();
             }
@@ -206,6 +206,12 @@ class MyGestureDetector extends SimpleOnGestureListener {
 		}
 
 	}
+}
+
+
+
+public void resetCurImage() {
+	renderer.cube.hasPicture[renderer.cube.lookingAt]=false;	
 }
 
 }
