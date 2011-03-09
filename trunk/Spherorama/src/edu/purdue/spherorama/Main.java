@@ -18,6 +18,6 @@ public class Main extends Activity implements OnClickListener {
     }
 
 	public void onClick(View v) {
-        startActivity(new Intent(this, CameraView.class));
+        startActivity(new Intent(this, ShootandView.class));
 	}
 }
