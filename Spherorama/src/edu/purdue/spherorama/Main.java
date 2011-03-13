@@ -39,7 +39,6 @@ public class Main extends Activity implements OnClickListener {
 			LayoutInflater factory = LayoutInflater.from(this);
             final View textEntryView = factory.inflate(R.layout.new_sphere, null);
             final AlertDialog ad = new AlertDialog.Builder(this)
-                .setIcon(android.R.drawable.ic_dialog_info)
                 .setTitle("Create New Spherorama")
                 .setView(textEntryView)
                 .setPositiveButton("Create", new DialogInterface.OnClickListener() {
@@ -62,36 +61,92 @@ public class Main extends Activity implements OnClickListener {
 		case R.id.btn_upload:
 			File sdir = new File("/sdcard/Spherorama");
 			String [] spheres = sdir.list();
+			if(spheres.length == 0) {
+				noSpheresDialog();
+				return;
+			}
 			boolean states[] = new boolean[spheres.length];
-			showSpheresDialog(spheres, states);
+			showSpheresDialog(spheres, states, 0);
 			break;
 		case R.id.btn_delete:
 			File sdir2 = new File("/sdcard/Spherorama");
 			String [] spheres2 = sdir2.list();
+			if(spheres2.length == 0) {
+				noSpheresDialog();
+				return;
+			}
 			boolean states2[] = new boolean[spheres2.length];
-			showSpheresDialog(spheres2, states2);
+			showSpheresDialog(spheres2, states2, 1);
 			break;
 		}
 	}
 	
-	public void showSpheresDialog(final String[] items, final boolean[] states) {
+	public void noSpheresDialog() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("No Spheres Available");
+		builder.setPositiveButton("OK", null);
+		builder.create().show();
+	}
+	
+	public void showSpheresDialog(final String[] items, final boolean[] states, final int type) {
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle("Pick Spheres")
-			.setPositiveButton("Upload", new DialogInterface.OnClickListener() {
+		builder.setTitle("Pick Spherorama");
+		if(type == 0) {
+			builder.setPositiveButton("Upload", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
-    	            
                 }
-            })
-            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            });
+		}
+		else {
+			builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+    	            actuallyDelete(items, states);                	
+                }
+            });
+		}
+		builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
                 }
             });
 		builder.setMultiChoiceItems(items, states, new DialogInterface.OnMultiChoiceClickListener(){
             public void onClick(DialogInterface dialogInterface, int item, boolean state) {
-                Toast.makeText(getApplicationContext(), items[item] + " set to " + state, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getApplicationContext(), items[item] + " set to " + state, Toast.LENGTH_SHORT).show();
             }
         });
 		builder.create().show();		
+	}
+	
+	public void actuallyDelete(final String[] items, final boolean[] states) {
+		
+		String deletingSpheres = "";
+		for(int i=0; i<states.length; i++)
+			if(states[i]) deletingSpheres = deletingSpheres+items[i]+"\n";
+		
+		deletingSpheres = "Operation can't be undone.\n\nChosen Spheres:\n"+deletingSpheres;
+		
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("Are you sure?");
+		builder.setMessage(deletingSpheres);
+		builder.setNegativeButton("No", null);
+		builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+            	for(int i=0; i<states.length; i++) {
+    				if(states[i]) {        	            
+    					String deldir = "/mnt/sdcard/Spherorama/"+items[i]+"/";
+    					File dir = new File(deldir);
+    					String [] pics = dir.list();
+    					for(int j=0; j<pics.length; j++) {
+    						String delfile = deldir+pics[j];
+    						File f = new File(delfile);
+    						f.delete();
+    					}
+    					dir.delete();
+    				}
+    			}
+            }
+		});
+		builder.create().show();
+		
 	}
 }
