@@ -1,13 +1,32 @@
 package edu.purdue.spherorama;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -19,6 +38,9 @@ public class Main extends Activity implements OnClickListener {
 	
 	private Context ctx;
 	private EditText edit_new;
+    static final int PROGRESS_DIALOG = 0;
+    private ProgressThread progressThread;
+    private ProgressDialog progressDialog;
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -95,6 +117,9 @@ public class Main extends Activity implements OnClickListener {
 		if(type == 0) {
 			builder.setPositiveButton("Upload", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
+                	progressThread = new ProgressThread(handler, items, states);
+                    showDialog(PROGRESS_DIALOG);                	
+                	//uploadSpheres(items, states);
                 }
             });
 		}
@@ -147,6 +172,170 @@ public class Main extends Activity implements OnClickListener {
             }
 		});
 		builder.create().show();
-		
+	}
+
+	public void uploadSpheres(Handler handler, final String[] items, final boolean[] states) {
+		try {
+			int total = 0; 
+			for(int i=0; i<states.length; i++) {
+				if(states[i])
+					total++;
+			}
+			total = total * 3;
+			int done = 0; 
+			for(int i=0; i<items.length; i++) {
+				if(states[i]) {
+					HttpClient client = new DefaultHttpClient();  
+			        String postURL = "http://174.97.218.135:8080";
+			        HttpPost post = new HttpPost(postURL);
+			        
+			        Message msg = handler.obtainMessage();
+		            msg.arg1 = (int)(((double)done++/total)*100);
+		            msg.obj = items[i]+": zipping images...";
+		            handler.sendMessage(msg);
+		            
+			        zipSphereDir(items[i]);
+			        File zippedSphere = new File("/mnt/sdcard/Spherorama/"+
+			        		items[i]+".zip");
+			        FileBody fileBody = new FileBody(zippedSphere);
+			        MultipartEntity reqEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);  
+			        reqEntity.addPart("zipFile", fileBody);
+			        reqEntity.addPart("name", new StringBody(items[i]+".zip"));
+			        
+			        msg = handler.obtainMessage();
+		            msg.arg1 = (int)(((double)done++/total)*100);
+		            msg.obj = items[i]+": uploading zipped file...";
+		            handler.sendMessage(msg);
+			        
+			        HttpResponse response = client.execute(post);  
+			        HttpEntity resEntity = response.getEntity();  
+			        if (resEntity != null) {  
+			        	// error happened
+			        }
+			        zippedSphere.delete();
+					msg = handler.obtainMessage();
+		            msg.arg1 = (int)(((double)done++/total)*100);
+		            msg.obj = items[i]+": done";
+		            handler.sendMessage(msg);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	protected Dialog onCreateDialog(int id) {
+        switch(id) {
+        case PROGRESS_DIALOG:
+            progressDialog = new ProgressDialog(this);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            progressDialog.setTitle("Uploading...");
+            progressDialog.setMessage("Starting...");
+            return progressDialog;
+        default:
+            return null;
+        }
+    }
+
+    @Override
+    protected void onPrepareDialog(int id, Dialog dialog) {
+        switch(id) {
+        case PROGRESS_DIALOG:
+            progressDialog.setProgress(0);
+            progressDialog.setCancelable(false);
+            //progressThread = new ProgressThread(handler);
+            progressThread.start();
+        }
+    }
+
+    // Define the Handler that receives messages from the thread and update the progress
+    final Handler handler = new Handler() {
+        public void handleMessage(Message msg) {
+            int total = msg.arg1;
+            String s = (String)msg.obj;
+            progressDialog.setProgress(total);
+            progressDialog.setMessage(s);
+            if (total >= 100){
+            	Toast.makeText(ctx, "Upload Completed", Toast.LENGTH_SHORT).show();
+                progressDialog.dismiss(); //dismissDialog(PROGRESS_DIALOG);
+                progressThread.setState(ProgressThread.STATE_DONE);
+            }
+        }
+    };
+	
+    /** Nested class that performs progress calculations (counting) */
+    class ProgressThread extends Thread {
+        Handler mHandler;
+        final static int STATE_DONE = 0;
+        final static int STATE_RUNNING = 1;
+        int mState;
+        int total;
+        String[] items;
+        boolean[] states;
+       
+        ProgressThread(Handler h, String[] s, boolean[] b) {
+            mHandler = h;
+            items = s;
+            states = b;
+        }
+       
+        public void run() {
+            mState = STATE_RUNNING;   
+            uploadSpheres(handler, items, states);
+            while(mState == STATE_RUNNING) {
+            	try {
+            		Thread.sleep(50);
+            	} catch(Exception e) {};
+            }
+        }
+        
+        /* sets the current state for the thread,
+         * used to stop the thread */
+        public void setState(int state) {
+            mState = state;
+        } 
+    }
+
+	private void zipSphereDir(String string) {
+		try 
+		{ 
+		    //create a ZipOutputStream to zip the data to 
+		    ZipOutputStream zos = new 
+		           ZipOutputStream(new FileOutputStream("/mnt/sdcard/Spherorama/"+string+".zip")); 
+		    zipDir("/mnt/sdcard/Spherorama/"+string, zos); 
+		    //close the stream 
+		    zos.close(); 
+		} 
+		catch(Exception e) { } 
+	}
+	public void zipDir(String dir2zip, ZipOutputStream zos) 
+	{ 
+	    try 
+	    { 
+	        File zipDir = new File(dir2zip); 
+	        //get a listing of the directory content 
+	        String[] dirList = zipDir.list(); 
+	        byte[] readBuffer = new byte[2156]; 
+	        int bytesIn = 0; 
+	        //loop through dirList, and zip the files 
+	        for(int i=0; i<dirList.length; i++) 
+	        { 
+	            File f = new File(zipDir, dirList[i]); 
+	            //create a FileInputStream on top of f 
+	            FileInputStream fis = new FileInputStream(f); 
+	            // create a new zip entry 
+	            ZipEntry anEntry = new ZipEntry(f.getPath()); 
+	            //place the zip entry in the ZipOutputStream object 
+	            zos.putNextEntry(anEntry); 
+	            //now write the content of the file to the ZipOutputStream 
+	            while((bytesIn = fis.read(readBuffer)) != -1) 
+	            { 
+	                zos.write(readBuffer, 0, bytesIn); 
+	            } 
+	           //close the Stream 
+	           fis.close(); 
+	        } 
+		} 
+		catch(Exception e) { } 
 	}
 }
