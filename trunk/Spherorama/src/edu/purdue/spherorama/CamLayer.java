@@ -101,8 +101,12 @@ public class CamLayer extends SurfaceView implements SurfaceHolder.Callback, Pre
     }
 
 	public void onPreviewFrame(byte[] arg0, Camera arg1) {
-    	if (previewCallback!=null && arg1!=null && mCamera!=null && isPreviewRunning)
-    		previewCallback.onPreviewFrame(arg0, arg1);        
+		if (previewCallback!=null && arg1!=null && mCamera!=null && isPreviewRunning) {
+			try {
+				previewCallback.onPreviewFrame(arg0, arg1);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}    
+		}
 	}
-	
 }
