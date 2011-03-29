@@ -17,7 +17,14 @@
       android:layout_marginTop="20dip"
       android:id="@+id/btn_new"
       android:text="Create New Spherorama"/>
-     
+    
+    <Button
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="20dip"
+      android:id="@+id/btn_open"
+      android:text="Open a Spherorama"/>
+      
     <Button
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
@@ -31,4 +38,5 @@
       android:layout_marginTop="20dip"
       android:id="@+id/btn_delete"
       android:text="Delete Spheroramas"/>
+      
 </LinearLayout>

@@ -10,10 +10,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.entity.FileEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.Activity;
@@ -26,7 +23,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -49,6 +45,8 @@ public class Main extends Activity implements OnClickListener {
         ctx = this.getApplicationContext();
         Button createNew = (Button)findViewById(R.id.btn_new);
         createNew.setOnClickListener(this);
+        Button open = (Button)findViewById(R.id.btn_open);
+        open.setOnClickListener(this);
         Button upload = (Button)findViewById(R.id.btn_upload);
         upload.setOnClickListener(this);
         Button delete = (Button)findViewById(R.id.btn_delete);
@@ -79,6 +77,16 @@ public class Main extends Activity implements OnClickListener {
                 })
                 .create();
             ad.show();
+			break;
+		case R.id.btn_open:
+			File sdir3 = new File("/sdcard/Spherorama");
+			String [] spheres3 = sdir3.list();
+			if(spheres3.length == 0) {
+				noSpheresDialog();
+				return;
+			}
+			boolean states3[] = new boolean[spheres3.length];
+			showSpheresDialog(spheres3, states3, 2);
 			break;
 		case R.id.btn_upload:
 			File sdir = new File("/sdcard/Spherorama");
@@ -122,23 +130,35 @@ public class Main extends Activity implements OnClickListener {
                 	//uploadSpheres(items, states);
                 }
             });
+			builder.setMultiChoiceItems(items, states, new DialogInterface.OnMultiChoiceClickListener(){
+	            public void onClick(DialogInterface dialogInterface, int item, boolean state) {
+	                //Toast.makeText(getApplicationContext(), items[item] + " set to " + state, Toast.LENGTH_SHORT).show();
+	            }
+	        });
 		}
-		else {
+		else if(type == 1){
 			builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
     	            actuallyDelete(items, states);                	
                 }
             });
+			builder.setMultiChoiceItems(items, states, new DialogInterface.OnMultiChoiceClickListener(){
+	            public void onClick(DialogInterface dialogInterface, int item, boolean state) {
+	                //Toast.makeText(getApplicationContext(), items[item] + " set to " + state, Toast.LENGTH_SHORT).show();
+	            }
+	        });
+		}
+		else { // Open we can only do one
+			builder.setSingleChoiceItems(items, -1, new DialogInterface.OnClickListener(){
+				public void onClick(DialogInterface dialog, int which) {
+					
+				}
+	        });
 		}
 		builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
                 }
             });
-		builder.setMultiChoiceItems(items, states, new DialogInterface.OnMultiChoiceClickListener(){
-            public void onClick(DialogInterface dialogInterface, int item, boolean state) {
-                //Toast.makeText(getApplicationContext(), items[item] + " set to " + state, Toast.LENGTH_SHORT).show();
-            }
-        });
 		builder.create().show();		
 	}
 	
@@ -186,25 +206,29 @@ public class Main extends Activity implements OnClickListener {
 			for(int i=0; i<items.length; i++) {
 				if(states[i]) {
 					HttpClient client = new DefaultHttpClient();  
-			        String postURL = "http://174.97.218.135:8080";
+			        String postURL = "http://pod5-3.cs.purdue.edu:8080/spherorama/server";
 			        HttpPost post = new HttpPost(postURL);
 			        
 			        Message msg = handler.obtainMessage();
-		            msg.arg1 = (int)(((double)done++/total)*100);
-		            msg.obj = items[i]+": zipping images...";
+		            msg.arg1 = (int)(((double)++done/total)*100);
+		            msg.obj = "zipping images for: "+items[i];
 		            handler.sendMessage(msg);
 		            
 			        zipSphereDir(items[i]);
 			        File zippedSphere = new File("/mnt/sdcard/Spherorama/"+
 			        		items[i]+".zip");
-			        FileBody fileBody = new FileBody(zippedSphere);
-			        MultipartEntity reqEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);  
-			        reqEntity.addPart("zipFile", fileBody);
-			        reqEntity.addPart("name", new StringBody(items[i]+".zip"));
+			        //FileBody fileBody = new FileBody(zippedSphere);
+			        //MultipartEntity reqEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);  
+			        //reqEntity.addPart("zipFile", fileBody);
+			        //reqEntity.addPart("name", new StringBody(items[i]+".zip"));
+			        FileEntity entity = new FileEntity(zippedSphere,"binary/octet-stream"); 
+                    entity.setChunked(true); 
+                    post.setEntity(entity); 
+                    post.addHeader("name", items[i]+".zip"); 
 			        
 			        msg = handler.obtainMessage();
-		            msg.arg1 = (int)(((double)done++/total)*100);
-		            msg.obj = items[i]+": uploading zipped file...";
+		            msg.arg1 = (int)(((double)++done/total)*100);
+		            msg.obj = "uploading zipped file: "+items[i];
 		            handler.sendMessage(msg);
 			        
 			        HttpResponse response = client.execute(post);  
@@ -214,7 +238,7 @@ public class Main extends Activity implements OnClickListener {
 			        }
 			        zippedSphere.delete();
 					msg = handler.obtainMessage();
-		            msg.arg1 = (int)(((double)done++/total)*100);
+		            msg.arg1 = (int)(((double)++done/total)*100);
 		            msg.obj = items[i]+": done";
 		            handler.sendMessage(msg);
 				}
