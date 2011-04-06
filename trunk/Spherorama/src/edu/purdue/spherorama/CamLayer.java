@@ -61,7 +61,7 @@ public class CamLayer extends SurfaceView implements SurfaceHolder.Callback, Pre
 	    		Log.d("Vortex", "picture: "+i.height+"x"+i.width);*/
 	    	
 	    	//p.setPreviewFormat(ImageFormat.RGB_565);
-	    	p.setPreviewSize(240, 160);
+	    	p.setPreviewSize(240, 160); // 720 x 480
 	    	p.setPictureSize(2592, 1728);
 	    	p.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_INCANDESCENT);
 	  
