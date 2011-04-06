@@ -161,7 +161,7 @@ public class ShootandView extends Activity {
 			Bitmap bitmapOrg = BitmapFactory.decodeByteArray(data, 0, data.length);
 			//1024x682 or 512x341
 			Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmapOrg, 512, 341, true);
-			bitmapOrg.recycle();
+			// bitmapOrg.recycle();
 			
 			Bitmap potBitmap = Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888);
 			Canvas drawInMiddle = new Canvas(potBitmap);
@@ -169,7 +169,8 @@ public class ShootandView extends Activity {
 			resizedBitmap.recycle();
 			
 	        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-	        potBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+	        // potBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+	        bitmapOrg.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
 
 	        int lookingAt = ((MyGLSurfaceView)glView).renderer.cube.lookingAt;
 	        //you can create a new file name "test.jpg" in sdcard folder.
@@ -179,6 +180,7 @@ public class ShootandView extends Activity {
 				//write the bytes in file
 				FileOutputStream fo = new FileOutputStream(f);
 				fo.write(bytes.toByteArray());
+				bitmapOrg.recycle();
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
