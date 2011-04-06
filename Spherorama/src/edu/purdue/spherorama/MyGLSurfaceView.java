@@ -63,14 +63,14 @@ Camera.PreviewCallback, Camera.PictureCallback {
 	      float currentX = evt.getX();
 	      float currentY = evt.getY();
 	      float deltaX;
-	      float deltaY;
+	      //float deltaY;
 	      switch (evt.getAction()) {
 	         case MotionEvent.ACTION_MOVE:
 	            // Modify rotational angles according to movement
 	            deltaX = currentX - previousX;
-	            deltaY = currentY - previousY;
+	            //deltaY = currentY - previousY;
 	            renderer.angleX += deltaX * TOUCH_SCALE_FACTOR * -1;
-	            renderer.angleY += deltaY * TOUCH_SCALE_FACTOR * -1;
+	            //renderer.angleY += deltaY * TOUCH_SCALE_FACTOR * -1;
 	      }
 	      // Save current x, y
 	      previousX = currentX;
