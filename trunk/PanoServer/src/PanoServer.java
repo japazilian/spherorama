@@ -30,10 +30,10 @@ public class PanoServer {
 				BufferedReader in = new BufferedReader(new InputStreamReader(inStream));
                 PrintWriter out = new PrintWriter(outStream, true /* autoFlush */);
                 
-                String filename = in.readLine();
                 String password = in.readLine();
                 
                 if(password.equals(args[1])) {
+                	System.out.println("New client");
                 	out.println("passed");
                 }
                 else {
@@ -41,6 +41,8 @@ public class PanoServer {
                 	continue;
                 }
                 
+                String filename = in.readLine();  
+            	System.out.println("File name: "+filename);
                 File f = new File(filename);
                 f.createNewFile();
                 
