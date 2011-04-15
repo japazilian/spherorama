@@ -37,6 +37,8 @@ public class PanoServer {
                 	out.println("passed");
                 }
                 else {
+                	System.out.println("Password failed");
+                	System.out.println("attempt from: "+incoming.getInetAddress());
                 	out.println("failed");
                 	continue;
                 }
