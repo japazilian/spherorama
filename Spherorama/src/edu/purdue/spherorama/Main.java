@@ -66,7 +66,7 @@ public class Main extends Activity implements OnClickListener {
                     	edit_new = (EditText)textEntryView.findViewById(R.id.edit_new_sphere);
                     	String name = edit_new.getText().toString();
                     	Intent i = new Intent();
-                    	i.setClassName("edu.purdue.spherorama", "edu.purdue.spherorama.SelectNeighbors");
+                    	i.setClassName("edu.purdue.spherorama", "edu.purdue.spherorama.ShootandView");
                     	i.putExtra("name", name);
                     	startActivity(i);
                     }
@@ -205,7 +205,7 @@ public class Main extends Activity implements OnClickListener {
 			int done = 0; 
 			for(int i=0; i<items.length; i++) {
 				if(states[i]) {
-					HttpClient client = new DefaultHttpClient();  
+					HttpClient client = new DefaultHttpClient(); 
 			        String postURL = "http://98.222.207.132:8080/spherorama/server";
 			        HttpPost post = new HttpPost(postURL);
 			        
