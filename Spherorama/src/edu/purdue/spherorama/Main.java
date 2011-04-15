@@ -1,17 +1,21 @@
 package edu.purdue.spherorama;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.FileEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -45,8 +49,8 @@ public class Main extends Activity implements OnClickListener {
         ctx = this.getApplicationContext();
         Button createNew = (Button)findViewById(R.id.btn_new);
         createNew.setOnClickListener(this);
-        Button open = (Button)findViewById(R.id.btn_open);
-        open.setOnClickListener(this);
+        Button settings = (Button)findViewById(R.id.btn_settings);
+        settings.setOnClickListener(this);
         Button upload = (Button)findViewById(R.id.btn_upload);
         upload.setOnClickListener(this);
         Button delete = (Button)findViewById(R.id.btn_delete);
@@ -78,15 +82,8 @@ public class Main extends Activity implements OnClickListener {
                 .create();
             ad.show();
 			break;
-		case R.id.btn_open:
-			File sdir3 = new File("/sdcard/Spherorama");
-			String [] spheres3 = sdir3.list();
-			if(spheres3.length == 0) {
-				noSpheresDialog();
-				return;
-			}
-			boolean states3[] = new boolean[spheres3.length];
-			showSpheresDialog(spheres3, states3, 2);
+		case R.id.btn_settings:
+			
 			break;
 		case R.id.btn_upload:
 			File sdir = new File("/sdcard/Spherorama");
@@ -205,9 +202,25 @@ public class Main extends Activity implements OnClickListener {
 			int done = 0; 
 			for(int i=0; i<items.length; i++) {
 				if(states[i]) {
-					HttpClient client = new DefaultHttpClient(); 
+					/*HttpClient client = new DefaultHttpClient(); 
 			        String postURL = "http://98.222.207.132:8080/spherorama/server";
-			        HttpPost post = new HttpPost(postURL);
+			        HttpPost post = new HttpPost(postURL);*/
+					Socket socket = new Socket("sac12.cs.purdue.edu", 9000);
+					InputStream inStream = socket.getInputStream() ;
+		            OutputStream outStream = socket.getOutputStream() ;
+		            BufferedReader in = new BufferedReader(new InputStreamReader(inStream));
+		            PrintWriter out = new PrintWriter(outStream, true /* autoFlush */);
+		            
+		            // Check with password
+		            out.println("karma");
+		            String status = in.readLine();
+		            if(status.equals("failed")) {
+		            	Toast.makeText(ctx, "Password Failed", 
+		            			Toast.LENGTH_SHORT).show();
+		            	Message msg = handler.obtainMessage();
+			            msg.arg1 = 100;
+			            handler.sendMessage(msg);
+		            }
 			        
 			        Message msg = handler.obtainMessage();
 		            msg.arg1 = (int)(((double)++done/total)*100);
@@ -217,25 +230,24 @@ public class Main extends Activity implements OnClickListener {
 			        zipSphereDir(items[i]);
 			        File zippedSphere = new File("/mnt/sdcard/Spherorama/"+
 			        		items[i]+".zip");
-			        //FileBody fileBody = new FileBody(zippedSphere);
-			        //MultipartEntity reqEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);  
-			        //reqEntity.addPart("zipFile", fileBody);
-			        //reqEntity.addPart("name", new StringBody(items[i]+".zip"));
-			        FileEntity entity = new FileEntity(zippedSphere,"binary/octet-stream"); 
-                    entity.setChunked(true); 
-                    post.setEntity(entity); 
-                    post.addHeader("name", items[i]+".zip"); 
+			        out.println(items[i]+".zip");
 			        
 			        msg = handler.obtainMessage();
 		            msg.arg1 = (int)(((double)++done/total)*100);
 		            msg.obj = "uploading zipped file: "+items[i];
 		            handler.sendMessage(msg);
 			        
-			        HttpResponse response = client.execute(post);  
-			        HttpEntity resEntity = response.getEntity();  
-			        if (resEntity != null) {  
-			        	// error happened
-			        }
+			        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(zippedSphere));
+		            BufferedOutputStream bos = new BufferedOutputStream(socket.getOutputStream( ));
+		            byte[] byteArray = new byte[8192];
+		            int num;
+		            while ((num = bis.read(byteArray)) != -1){
+		                bos.write(byteArray,0,num);
+		            }
+
+		            bos.close();
+		            bis.close();
+			        
 			        zippedSphere.delete();
 					msg = handler.obtainMessage();
 		            msg.arg1 = (int)(((double)++done/total)*100);
