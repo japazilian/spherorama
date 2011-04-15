@@ -40,6 +40,7 @@ public class PanoServer {
                 	System.out.println("Password failed");
                 	System.out.println("attempt from: "+incoming.getInetAddress());
                 	out.println("failed");
+                	out.flush();
                 	continue;
                 }
                 
