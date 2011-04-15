@@ -9,21 +9,18 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Display;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-public class SelectNeighbors extends Activity implements OnTouchListener {
+public class SelectNeighbors extends Activity implements OnTouchListener, OnClickListener {
 	
 	//private Button btn_pos, btn_neighbors, btn_done;
 	private ImageView img_map;
@@ -45,9 +42,9 @@ public class SelectNeighbors extends Activity implements OnTouchListener {
         btn_pos.setOnClickListener(this);
         btn_pos.setEnabled(false);
         btn_neighbors = (Button)findViewById(R.id.btn_neighbors);
-        btn_neighbors.setOnClickListener(this);
-        btn_done = (Button)findViewById(R.id.btn_done);
-        btn_done.setOnClickListener(this);*/
+        btn_neighbors.setOnClickListener(this);*/
+        Button btn_done = (Button)findViewById(R.id.btn_done);
+        btn_done.setOnClickListener(this);
         img_map = (ImageView)findViewById(R.id.img_map);
         img_map.setOnTouchListener(this);
         Display display = getWindowManager().getDefaultDisplay(); 
@@ -87,17 +84,6 @@ public class SelectNeighbors extends Activity implements OnTouchListener {
 		BitmapDrawable map = new BitmapDrawable("/sdcard/Spherorama/maps/"+fileName);
 		img_map.setImageDrawable(map);
 		img_map.invalidate();
-		/*java.io.FileInputStream in;
-		try {
-			String file = "/mnt/sdcard/Spherorama/maps/"+fileName;
-			//in = openFileInput(file);
-			File f = new File(file);
-			in = new FileInputStream(f);
-			img_map.setImageBitmap(BitmapFactory.decodeStream(in));
-			img_map.invalidate();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}*/
 	}
 
 	float mx=0, my=0;
@@ -135,35 +121,13 @@ public class SelectNeighbors extends Activity implements OnTouchListener {
 
          return true;
 	}
-	
-	@Override
-	   public boolean onCreateOptionsMenu(Menu menu) {
-		   MenuInflater inflater = getMenuInflater();
-		   inflater.inflate(R.layout.attr_menu, menu);
-		   return true;
-	   }
 
-   @Override
-   public boolean onOptionsItemSelected(MenuItem item) {
-	   switch (item.getItemId()) {
-	   case R.id.menu_done_attr:
+	public void onClick(View v) {
 		   Intent i = new Intent();
 		   i.putExtra("x", x);
 		   i.putExtra("y", y);
 		   i.putExtra("map", map);
 		   setResult(RESULT_OK, i);
 		   this.finish();
-	   default:
-		   return super.onOptionsItemSelected(item);
-	   }
-	}
-
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		 if (keyCode == KeyEvent.KEYCODE_BACK) {
-			 return true;
-	     }
-
-		return super.onKeyDown(keyCode, event);
 	}   
 }

@@ -19,8 +19,10 @@
         </activity>
         
         <activity android:name=".SelectNeighbors"
-                  android:label="Properties"
                   android:screenOrientation="portrait"/>
+        <activity android:name=".Properties"
+                  android:label="Settings"
+                  android:theme="@android:style/Theme.Dialog"/>
 
     </application>
 	
