@@ -22,9 +22,9 @@
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
       android:layout_marginTop="20dip"
-      android:id="@+id/btn_open"
-      android:text="Open a Spherorama"
-      android:enabled="false"/>
+      android:id="@+id/btn_settings"
+      android:text="Settings"
+      android:enabled="true"/>
       
     <Button
       android:layout_width="fill_parent"
