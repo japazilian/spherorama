@@ -41,6 +41,9 @@ public class PanoServer {
                 	System.out.println("attempt from: "+incoming.getInetAddress());
                 	out.println("failed");
                 	out.flush();
+                	in.close();
+                	out.close();
+                	incoming.close();
                 	continue;
                 }
                 
