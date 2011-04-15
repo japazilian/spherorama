@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:gravity="center"
+    android:padding="30dip"
+    >
+    <EditText android:layout_height="wrap_content" android:layout_width="match_parent" android:hint="Server" android:id="@+id/edit_server"></EditText>
+    <EditText android:layout_height="wrap_content" android:layout_width="match_parent" android:id="@+id/edit_port" android:hint="Port" android:digits="1234567890"></EditText>
+    <EditText android:layout_height="wrap_content" android:layout_width="match_parent" android:id="@+id/edit_password" android:hint="Password"></EditText>
+    <Button android:layout_height="wrap_content" android:text="Done" android:layout_width="100dp" android:id="@+id/btn_props"></Button>
+      
+</LinearLayout>
