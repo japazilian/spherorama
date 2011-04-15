@@ -24,6 +24,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -83,7 +84,8 @@ public class Main extends Activity implements OnClickListener {
             ad.show();
 			break;
 		case R.id.btn_settings:
-			
+			Intent i2 = new Intent(this, Properties.class);
+			startActivity(i2);
 			break;
 		case R.id.btn_upload:
 			File sdir = new File("/sdcard/Spherorama");
@@ -193,6 +195,14 @@ public class Main extends Activity implements OnClickListener {
 
 	public void uploadSpheres(Handler handler, final String[] items, final boolean[] states) {
 		try {
+			
+			//Get server, port, and password form prefs
+			SharedPreferences settings = getSharedPreferences("prefs", 0);
+			String server = settings.getString("server", "sac01.cs.purdue.edu");
+			String port = settings.getString("port", "8080");
+			String password = settings.getString("password", "password");
+			
+			
 			int total = 0; 
 			for(int i=0; i<states.length; i++) {
 				if(states[i])
@@ -205,14 +215,14 @@ public class Main extends Activity implements OnClickListener {
 					/*HttpClient client = new DefaultHttpClient(); 
 			        String postURL = "http://98.222.207.132:8080/spherorama/server";
 			        HttpPost post = new HttpPost(postURL);*/
-					Socket socket = new Socket("sac12.cs.purdue.edu", 9000);
+					Socket socket = new Socket(server, Integer.parseInt(port));
 					InputStream inStream = socket.getInputStream() ;
 		            OutputStream outStream = socket.getOutputStream() ;
 		            BufferedReader in = new BufferedReader(new InputStreamReader(inStream));
 		            PrintWriter out = new PrintWriter(outStream, true /* autoFlush */);
 		            
 		            // Check with password
-		            out.println("karma");
+		            out.println(password);
 		            String status = in.readLine();
 		            if(status.equals("failed")) {
 		            	Toast.makeText(ctx, "Password Failed", 
