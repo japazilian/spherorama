@@ -19,7 +19,8 @@
         </activity>
         
         <activity android:name=".SelectNeighbors"
-                  android:label="Properties"/>
+                  android:label="Properties"
+                  android:screenOrientation="portrait"/>
 
     </application>
 	

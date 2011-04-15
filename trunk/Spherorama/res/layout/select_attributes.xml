@@ -5,6 +5,7 @@
   android:layout_height="fill_parent"
   android:orientation="vertical">
   <LinearLayout
+    android:visibility="gone"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
@@ -26,9 +27,24 @@
       android:id="@+id/btn_done"/>
   </LinearLayout>
   
+  <FrameLayout 
+    android:id="@+id/frameLayout1" 
+    android:layout_width="fill_parent" 
+    android:layout_height="fill_parent">
+  
+      
   <ImageView 
     android:id="@+id/img_map" 
     android:layout_width="fill_parent" 
     android:layout_height="fill_parent"
     android:scaleType="matrix"/>
+  <ImageView 
+  
+    android:src="@drawable/cross"
+    android:layout_width="fill_parent" 
+    android:layout_height="fill_parent"
+    android:scaleType="fitCenter"/>
+    
+  </FrameLayout>
+
 </LinearLayout>
