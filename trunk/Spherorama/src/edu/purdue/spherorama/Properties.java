@@ -47,7 +47,9 @@ public class Properties extends Activity implements OnClickListener {
 		
 		if(server.getText().toString().equals("") ||
 				port.getText().toString().equals("") ||
-				password.getText().toString().equals(""));
+				password.getText().toString().equals("")) {
+			return;
+		}
 		
 		
 		SharedPreferences settings = getSharedPreferences("prefs", 0);

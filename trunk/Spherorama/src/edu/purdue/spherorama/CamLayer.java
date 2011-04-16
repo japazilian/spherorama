@@ -28,6 +28,7 @@ public class CamLayer extends SurfaceView implements SurfaceHolder.Callback, Pre
     boolean isPreviewRunning = false;
     Camera.PreviewCallback previewCallback;
     Camera.PictureCallback jpgCallback;
+    String firstShotWhiteBalance = "";
     
     Context ctx;
 
@@ -86,9 +87,11 @@ public class CamLayer extends SurfaceView implements SurfaceHolder.Callback, Pre
     	//synchronized(this) {
 	    	try {
 		    	if (mCamera!=null) {
-		    		mCamera.stopPreview();  
 		    		isPreviewRunning=false;
+		    		mCamera.stopPreview();  
+	                mCamera.setPreviewCallback(null); 
 		    		mCamera.release();
+		    		mCamera = null;
 		    	}
 	    	} catch (Exception e) {
 				Log.e("Camera", e.getMessage());

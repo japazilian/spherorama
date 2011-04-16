@@ -139,7 +139,7 @@ Camera.PreviewCallback, Camera.PictureCallback {
 class MyGestureDetector extends SimpleOnGestureListener {
     
     float SWIPE_MAX_OFF_PATH = 40.0f;
-    float SWIPE_MIN_DISTANCE = 1.0f;
+    float SWIPE_MIN_DISTANCE = 3.0f;
     float SWIPE_THRESHOLD_VELOCITY = 1.0f;
     
     float startTime;
@@ -180,7 +180,7 @@ class MyGestureDetector extends SimpleOnGestureListener {
 			if(direction == 1) {
 				float startTime = SystemClock.elapsedRealtime();
 				float origX = renderer.angleX;
-				float speed = (float)20/500000;
+				float speed = (float)15/500000;
 				while(SystemClock.elapsedRealtime() < (startTime+500)) {
 					float deltat = (SystemClock.elapsedRealtime() - startTime);
 					renderer.angleX = renderer.angleX+speed*deltat;
@@ -193,7 +193,7 @@ class MyGestureDetector extends SimpleOnGestureListener {
 			else {
 				float startTime = SystemClock.elapsedRealtime();
 				float origX = renderer.angleX;
-				float speed = (float)20/500000;
+				float speed = (float)15/500000;
 				while(SystemClock.elapsedRealtime() < (startTime+500)) {
 					float deltat = (SystemClock.elapsedRealtime() - startTime);
 					renderer.angleX = renderer.angleX-speed*deltat;

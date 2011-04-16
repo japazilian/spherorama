@@ -11,11 +11,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -88,6 +86,26 @@ public class Main extends Activity implements OnClickListener {
 			startActivity(i2);
 			break;
 		case R.id.btn_upload:
+			{
+				File sdir = new File("/sdcard/Spherorama");
+				String [] spheres = sdir.list();
+				if(spheres.length == 0) {
+					noSpheresDialog();
+					return;
+				}
+				boolean states[] = new boolean[spheres.length];
+				String spheresWithoutMaps[] = new String[spheres.length-1];
+				int index=0;
+				for(int i=0; i<spheres.length; i++) {
+					if(spheres[i].equalsIgnoreCase("maps"))
+						continue;
+					spheresWithoutMaps[index++] = spheres[i];
+				}
+				showSpheresDialog(spheresWithoutMaps, states, 0);
+			}
+			break;
+		case R.id.btn_delete:
+		{
 			File sdir = new File("/sdcard/Spherorama");
 			String [] spheres = sdir.list();
 			if(spheres.length == 0) {
@@ -95,18 +113,15 @@ public class Main extends Activity implements OnClickListener {
 				return;
 			}
 			boolean states[] = new boolean[spheres.length];
-			showSpheresDialog(spheres, states, 0);
-			break;
-		case R.id.btn_delete:
-			File sdir2 = new File("/sdcard/Spherorama");
-			String [] spheres2 = sdir2.list();
-			if(spheres2.length == 0) {
-				noSpheresDialog();
-				return;
+			String spheresWithoutMaps[] = new String[spheres.length-1];
+			int index=0;
+			for(int i=0; i<spheres.length; i++) {
+				if(spheres[i].equalsIgnoreCase("maps"))
+					continue;
+				spheresWithoutMaps[index++] = spheres[i];
 			}
-			boolean states2[] = new boolean[spheres2.length];
-			showSpheresDialog(spheres2, states2, 1);
-			break;
+			showSpheresDialog(spheresWithoutMaps, states, 1);
+		}
 		}
 	}
 	
