@@ -4,28 +4,6 @@
   android:layout_width="fill_parent"
   android:layout_height="fill_parent"
   android:orientation="vertical">
-  <LinearLayout
-    android:visibility="gone"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center">
-    <Button
-      android:layout_width="100dip"
-      android:layout_height="wrap_content"
-      android:text="Move Position"
-      android:id="@+id/btn_pos"/>
-    <Button
-      android:layout_width="100dip"
-      android:layout_height="wrap_content"
-      android:text="Select Neighbors"
-      android:id="@+id/btn_neighbors"/>
-    <Button
-      android:layout_width="100dip"
-      android:layout_height="wrap_content"
-      android:text="Done"
-      android:id="@+id/btn_done"/>
-  </LinearLayout>
   
   <FrameLayout 
     android:id="@+id/frameLayout1" 

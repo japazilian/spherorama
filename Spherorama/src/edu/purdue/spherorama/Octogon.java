@@ -351,7 +351,62 @@ public class Octogon implements PreviewCallback{
 	}
 
 	public void onPreviewFrame(byte[] data, Camera camera) {	
-		int bwCounter=48*256;
+		// We are going from 240x160 to 256x170 to fit in 256x256
+		
+		int bwCounter=43*256;
+		int yuvsCounter=0;
+		boolean again = false;
+		
+
+		byte[] singleLine = new byte[256];
+		for(int y=0; y<80; y++) {
+			System.arraycopy(data, yuvsCounter, singleLine, 0, 120);
+			yuvsCounter+=120;
+			for(int j=0; j<16; j++) {
+				singleLine[120+j]=data[yuvsCounter];
+			}
+			System.arraycopy(data, yuvsCounter, singleLine, 136, 120);
+			yuvsCounter+=120;
+			System.arraycopy(singleLine, 0, glCameraFrame, bwCounter, 256);
+			bwCounter+=256;
+		}
+		for(int y=0; y<10; y++) {
+			System.arraycopy(singleLine, 0, glCameraFrame, bwCounter, 256);
+			bwCounter+=256;
+		}
+		for(int y=0; y<80; y++) {
+			System.arraycopy(data, yuvsCounter, singleLine, 0, 120);
+			yuvsCounter+=120;
+			for(int j=0; j<16; j++) {
+				singleLine[120+j]=data[yuvsCounter];
+			}
+			System.arraycopy(data, yuvsCounter, singleLine, 136, 120);
+			yuvsCounter+=120;
+			System.arraycopy(singleLine, 0, glCameraFrame, bwCounter, 256);
+			bwCounter+=256;
+		}
+		
+		/*
+		for (int y=0;y<160;y++) {
+			//System.arraycopy(data, yuvsCounter, glCameraFrame, bwCounter, 240);
+			
+			if(y%16==0)
+				again = true;
+			
+			for(int j=0; j<16; j++) {
+				System.arraycopy(data, yuvsCounter, glCameraFrame, bwCounter, 15);
+				yuvsCounter += 15;
+				bwCounter += 15;
+				glCameraFrame[bwCounter+1] = data[yuvsCounter];
+				bwCounter++;
+			}
+		}
+		
+		
+		
+		
+		
+		/*int bwCounter=48*256;
 		int yuvsCounter=0;
 		boolean again = false;
 		for (int y=0;y<160;y++) {
@@ -367,24 +422,6 @@ public class Octogon implements PreviewCallback{
 				glCameraFrame[bwCounter+1] = data[yuvsCounter];
 				bwCounter++;
 			}
-			/*
-			if (again) {
-				for(int j=0; j<16; j++) {
-					System.arraycopy(data, yuvsCounter, glCameraFrame, bwCounter, 15);
-					yuvsCounter += 15;
-					bwCounter += 15;
-					glCameraFrame[bwCounter+1] = data[yuvsCounter];
-					bwCounter++;
-				}
-				again = false;
-			}*/
-				
-	
-			
-			
-			
-			//yuvsCounter=yuvsCounter+240;
-			//bwCounter=bwCounter+256;
-		}
+		}*/
 	}
 }

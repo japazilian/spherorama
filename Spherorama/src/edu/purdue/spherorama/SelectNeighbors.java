@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.view.Display;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -73,7 +74,7 @@ public class SelectNeighbors extends Activity implements OnTouchListener, OnClic
         });
 		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-            	Toast.makeText(ctx, "Center map on location.\nTap menu button"+
+            	Toast.makeText(ctx, "Center map on location.\nTap done button"+
             			" when done.", Toast.LENGTH_LONG).show();
             }
         });
@@ -121,7 +122,7 @@ public class SelectNeighbors extends Activity implements OnTouchListener, OnClic
 
          return true;
 	}
-
+	
 	public void onClick(View v) {
 		   Intent i = new Intent();
 		   i.putExtra("x", x);
@@ -129,5 +130,14 @@ public class SelectNeighbors extends Activity implements OnTouchListener, OnClic
 		   i.putExtra("map", map);
 		   setResult(RESULT_OK, i);
 		   this.finish();
-	}   
+	}  
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		 if (keyCode == KeyEvent.KEYCODE_BACK) {
+			 return true;
+	     }
+
+		return super.onKeyDown(keyCode, event);
+	}
 }
