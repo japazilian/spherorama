@@ -10,27 +10,27 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.ProgressDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RemoteViews;
 import android.widget.Toast;
 
 public class Main extends Activity implements OnClickListener {
@@ -38,8 +38,8 @@ public class Main extends Activity implements OnClickListener {
 	private Context ctx;
 	private EditText edit_new;
     static final int PROGRESS_DIALOG = 0;
-    private ProgressThread progressThread;
-    private ProgressDialog progressDialog;
+    //private ProgressThread progressThread;
+    //private ProgressDialog progressDialog;
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -89,7 +89,7 @@ public class Main extends Activity implements OnClickListener {
 			{
 				File sdir = new File("/sdcard/Spherorama");
 				String [] spheres = sdir.list();
-				if(spheres.length == 0) {
+				if(spheres.length == 1) {
 					noSpheresDialog();
 					return;
 				}
@@ -108,7 +108,7 @@ public class Main extends Activity implements OnClickListener {
 		{
 			File sdir = new File("/sdcard/Spherorama");
 			String [] spheres = sdir.list();
-			if(spheres.length == 0) {
+			if(spheres.length == 1) {
 				noSpheresDialog();
 				return;
 			}
@@ -139,9 +139,9 @@ public class Main extends Activity implements OnClickListener {
 		if(type == 0) {
 			builder.setPositiveButton("Upload", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
-                	progressThread = new ProgressThread(handler, items, states);
-                    showDialog(PROGRESS_DIALOG);                	
-                	//uploadSpheres(items, states);
+                	//progressThread = new ProgressThread(handler, items, states);
+                    //showDialog(PROGRESS_DIALOG);                	
+                	uploadSpheres(items, states);
                 }
             });
 			builder.setMultiChoiceItems(items, states, new DialogInterface.OnMultiChoiceClickListener(){
@@ -208,154 +208,161 @@ public class Main extends Activity implements OnClickListener {
 		builder.create().show();
 	}
 
-	public void uploadSpheres(Handler handler, final String[] items, final boolean[] states) {
-		try {
-			
-			//Get server, port, and password form prefs
-			SharedPreferences settings = getSharedPreferences("prefs", 0);
-			String server = settings.getString("server", "sac01.cs.purdue.edu");
-			String port = settings.getString("port", "8080");
-			String password = settings.getString("password", "password");
-			
-			
-			int total = 0; 
-			for(int i=0; i<states.length; i++) {
-				if(states[i])
-					total++;
-			}
-			total = total * 3;
-			int done = 0; 
-			for(int i=0; i<items.length; i++) {
-				if(states[i]) {
-					/*HttpClient client = new DefaultHttpClient(); 
-			        String postURL = "http://98.222.207.132:8080/spherorama/server";
-			        HttpPost post = new HttpPost(postURL);*/
-					Socket socket = new Socket(server, Integer.parseInt(port));
-					InputStream inStream = socket.getInputStream() ;
-		            OutputStream outStream = socket.getOutputStream() ;
-		            BufferedReader in = new BufferedReader(new InputStreamReader(inStream));
-		            PrintWriter out = new PrintWriter(outStream, true /* autoFlush */);
-		            
-		            // Check with password
-		            out.println(password);
-		            String status = in.readLine();
-		            if(status.equals("failed")) {
-		            	Toast.makeText(ctx, "Password Failed", 
-		            			Toast.LENGTH_SHORT).show();
-		            	Message msg = handler.obtainMessage();
-			            msg.arg1 = 100;
-			            handler.sendMessage(msg);
-		            }
-			        
-			        Message msg = handler.obtainMessage();
-		            msg.arg1 = (int)(((double)++done/total)*100);
-		            msg.obj = "zipping images for: "+items[i];
-		            handler.sendMessage(msg);
-		            
-			        zipSphereDir(items[i]);
-			        File zippedSphere = new File("/mnt/sdcard/Spherorama/"+
-			        		items[i]+".zip");
-			        out.println(items[i]+".zip");
-			        
-			        msg = handler.obtainMessage();
-		            msg.arg1 = (int)(((double)++done/total)*100);
-		            msg.obj = "uploading zipped file: "+items[i];
-		            handler.sendMessage(msg);
-			        
-			        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(zippedSphere));
-		            BufferedOutputStream bos = new BufferedOutputStream(socket.getOutputStream( ));
-		            byte[] byteArray = new byte[8192];
-		            int num;
-		            while ((num = bis.read(byteArray)) != -1){
-		                bos.write(byteArray,0,num);
-		            }
-
-		            bos.close();
-		            bis.close();
-			        
-			        zippedSphere.delete();
-					msg = handler.obtainMessage();
-		            msg.arg1 = (int)(((double)++done/total)*100);
-		            msg.obj = items[i]+": done";
-		            handler.sendMessage(msg);
+	public void uploadSpheres(final String[] items, final boolean[] states) {
+		Thread uploadThread = new Thread(new Runnable() {
+			public void run() {
+				String ns = Context.NOTIFICATION_SERVICE;
+				NotificationManager mNotificationManager = (NotificationManager) getSystemService(ns);
+				try {
+					//Get server, port, and password form prefs
+					SharedPreferences settings = getSharedPreferences("prefs", 0);
+					String server = settings.getString("server", "sac01.cs.purdue.edu");
+					String port = settings.getString("port", "8080");
+					String password = settings.getString("password", "password");
+					
+					
+					// Setting up notification
+					CharSequence tickerText = "Uploading images";              // ticker-text
+					long when = System.currentTimeMillis();         // notification time
+					// the next two lines initialize the Notification, using the configurations above
+					Notification notification = new Notification(android.R.drawable.stat_sys_upload, tickerText, when);
+					RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.upload_notification_layout);
+			        contentView.setProgressBar(R.id.progressbar, 100, 0, true);
+			        contentView.setTextViewText(R.id.text_notification, "Attempting connection.");
+			        notification.contentView = contentView;
+			        notification.flags |= Notification.FLAG_ONGOING_EVENT;
+			        notification.flags |= Notification.FLAG_NO_CLEAR;
+					Intent notificationIntent = new Intent(ctx, Main.class);
+					PendingIntent contentIntent = PendingIntent.getActivity(ctx, 0, notificationIntent, 0);
+					notification.contentIntent = contentIntent;
+					mNotificationManager.notify(0, notification);
+					
+					
+					int total = 0; 
+					for(int i=0; i<states.length; i++) {
+						if(states[i])
+							total++;
+					}
+					total = total * 3;
+					int done = 0; 
+					for(int i=0; i<items.length; i++) {
+						if(states[i]) {
+							Socket socket = new Socket();
+							socket.connect(new InetSocketAddress(server, Integer.parseInt(port)), 5*1000);
+							InputStream inStream = socket.getInputStream() ;
+				            OutputStream outStream = socket.getOutputStream() ;
+				            BufferedReader in = new BufferedReader(new InputStreamReader(inStream));
+				            PrintWriter out = new PrintWriter(outStream, true /* autoFlush */);
+				            
+				            // Check with password
+				            out.println(password);
+				            String status = in.readLine();
+				            
+				            if(status.equals("failed")) {
+								// Kill upload notification, create new notification to
+								// say the password was incorrect
+								mNotificationManager.cancel(0);
+								int icon_failed = android.R.drawable.stat_notify_error;
+								CharSequence tickerText_failed = "Password Failed";
+								long when_failed = System.currentTimeMillis();
+								Notification notification_failed = new Notification(icon_failed, tickerText_failed, when_failed);
+								notification_failed.flags |= Notification.FLAG_AUTO_CANCEL;
+								CharSequence contentTitle = "Pano: Password Failed";
+								CharSequence contentText = "Incorrect password for server.";
+								Intent notificationIntent_failed = new Intent(ctx, Main.class);
+								PendingIntent contentIntent_failed = PendingIntent.getActivity(ctx, 0, notificationIntent_failed, 0);
+								notification_failed.setLatestEventInfo(ctx, contentTitle, contentText, contentIntent_failed);
+								mNotificationManager.notify(2, notification_failed);
+					            return;
+				            }
+					        
+				            int percentageDone = (int)(((double)++done/total)*100);
+				            contentView.setProgressBar(R.id.progressbar, 100, percentageDone, false);
+				            contentView.setTextViewText(R.id.txt_percentage, percentageDone+"%");
+					        contentView.setTextViewText(R.id.text_notification, "zipping images: "+items[i]);
+					        notification.contentView = contentView;
+							mNotificationManager.notify(0, notification);
+				            
+					        zipSphereDir(items[i]);
+					        File zippedSphere = new File("/mnt/sdcard/Spherorama/"+
+					        		items[i]+".zip");
+					        out.println(items[i]+".zip");
+					        
+					        percentageDone = (int)(((double)++done/total)*100);
+				            contentView.setProgressBar(R.id.progressbar, 100, percentageDone, false);
+				            contentView.setTextViewText(R.id.txt_percentage, percentageDone+"%");
+					        contentView.setTextViewText(R.id.text_notification, "uploading: "+items[i]);
+					        notification.contentView = contentView;
+							mNotificationManager.notify(0, notification);					        
+					        
+					        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(zippedSphere));
+				            BufferedOutputStream bos = new BufferedOutputStream(socket.getOutputStream( ));
+				            byte[] byteArray = new byte[8192];
+				            int num;
+				            while ((num = bis.read(byteArray)) != -1){
+				                bos.write(byteArray,0,num);
+				            }
+		
+				            bos.close();
+				            bis.close();
+					        
+					        zippedSphere.delete();
+					        
+					        percentageDone = (int)(((double)++done/total)*100);
+				            contentView.setProgressBar(R.id.progressbar, 100, percentageDone, false);
+				            contentView.setTextViewText(R.id.txt_percentage, percentageDone+"%");
+					        contentView.setTextViewText(R.id.text_notification, "finished: "+items[i]);
+					        notification.contentView = contentView;
+							mNotificationManager.notify(0, notification);	
+							socket.close();
+						} // for
+					} // if
+					
+					// Kill upload notification, create new notification to 
+					// say we are done
+					mNotificationManager.cancel(0);
+					int icon_done = android.R.drawable.stat_sys_upload_done;
+					CharSequence tickerText_done = "Upload Complete";
+					long when_done = System.currentTimeMillis();
+					Notification notification_done = new Notification(icon_done, tickerText_done, when_done);
+					notification_done.flags |= Notification.FLAG_AUTO_CANCEL;
+					CharSequence contentTitle = "Pano: Upload Complete";
+					CharSequence contentText = "All images uploaded successfuly.";
+					Intent notificationIntent_done = new Intent(ctx, Main.class);
+					PendingIntent contentIntent_done = PendingIntent.getActivity(ctx, 0, notificationIntent_done, 0);
+					notification_done.setLatestEventInfo(ctx, contentTitle, contentText, contentIntent_done);
+					mNotificationManager.notify(1, notification_done);
+				} catch (Exception e) {
+					// Kill upload notification, create new notification to
+					// say there was an error while uploading or connecting
+					mNotificationManager.cancel(0);
+					int icon_failed = android.R.drawable.stat_notify_error;
+					CharSequence tickerText_failed = "Error in Server Connection";
+					long when_failed = System.currentTimeMillis();
+					Notification notification_failed = new Notification(icon_failed, tickerText_failed, when_failed);
+					notification_failed.flags |= Notification.FLAG_AUTO_CANCEL;
+					CharSequence contentTitle = "Pano: Error in Server Connection";
+					CharSequence contentText = e.getClass().getName();
+					Intent notificationIntent_failed = new Intent(ctx, Main.class);
+					PendingIntent contentIntent_failed = PendingIntent.getActivity(ctx, 0, notificationIntent_failed, 0);
+					notification_failed.setLatestEventInfo(ctx, contentTitle, contentText, contentIntent_failed);
+					mNotificationManager.notify(2, notification_failed);
+					
+					try {
+						//There might be .zip files to delete, need to delete them
+						for(int i=0; i<states.length; i++) {
+		    				if(states[i]) {        	            
+		    					String delzip = "/mnt/sdcard/Spherorama/"+items[i]+".zip";
+		    					File zip = new File(delzip);
+		    					zip.delete();
+		    				}
+		    			}
+					} catch (Exception e2) { };
 				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+			} // run
+		});
+		uploadThread.start();
 	}
-	
-	protected Dialog onCreateDialog(int id) {
-        switch(id) {
-        case PROGRESS_DIALOG:
-            progressDialog = new ProgressDialog(this);
-            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            progressDialog.setTitle("Uploading...");
-            progressDialog.setMessage("Starting...");
-            return progressDialog;
-        default:
-            return null;
-        }
-    }
-
-    @Override
-    protected void onPrepareDialog(int id, Dialog dialog) {
-        switch(id) {
-        case PROGRESS_DIALOG:
-            progressDialog.setProgress(0);
-            progressDialog.setCancelable(false);
-            //progressThread = new ProgressThread(handler);
-            progressThread.start();
-        }
-    }
-
-    // Define the Handler that receives messages from the thread and update the progress
-    final Handler handler = new Handler() {
-        public void handleMessage(Message msg) {
-            int total = msg.arg1;
-            String s = (String)msg.obj;
-            progressDialog.setProgress(total);
-            progressDialog.setMessage(s);
-            if (total >= 100){
-            	Toast.makeText(ctx, "Upload Completed", Toast.LENGTH_SHORT).show();
-                progressDialog.dismiss(); //dismissDialog(PROGRESS_DIALOG);
-                progressThread.setState(ProgressThread.STATE_DONE);
-            }
-        }
-    };
-	
-    /** Nested class that performs progress calculations (counting) */
-    class ProgressThread extends Thread {
-        Handler mHandler;
-        final static int STATE_DONE = 0;
-        final static int STATE_RUNNING = 1;
-        int mState;
-        int total;
-        String[] items;
-        boolean[] states;
-       
-        ProgressThread(Handler h, String[] s, boolean[] b) {
-            mHandler = h;
-            items = s;
-            states = b;
-        }
-       
-        public void run() {
-            mState = STATE_RUNNING;   
-            uploadSpheres(handler, items, states);
-            while(mState == STATE_RUNNING) {
-            	try {
-            		Thread.sleep(50);
-            	} catch(Exception e) {};
-            }
-        }
-        
-        /* sets the current state for the thread,
-         * used to stop the thread */
-        public void setState(int state) {
-            mState = state;
-        } 
-    }
 
 	private void zipSphereDir(String string) {
 		try 

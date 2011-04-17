@@ -26,16 +26,17 @@ public class Properties extends Activity implements OnClickListener {
 		String portString = settings.getString("port", "8080");
 		String passwordString = settings.getString("password", "password");
 		TextView txt_props = (TextView)findViewById(R.id.text_props);
-		txt_props.setText("Currently Using: \n"+serverString+"\n"+portString+
-				"\n"+passwordString);
-		/*
+		txt_props.setText("Currently Using: \nServer: "+serverString+
+				"\nPort: "+portString+
+				"\nPassword: "+passwordString);
+		
 		EditText server, port, password;
 		server = (EditText)findViewById(R.id.edit_server);
 		server.setText(serverString);
 		port = (EditText)findViewById(R.id.edit_port);
 		port.setText(portString);
 		password = (EditText)findViewById(R.id.edit_password);
-		password.setText(passwordString);*/
+		password.setText(passwordString);
     }
 
 	public void onClick(View arg0) {

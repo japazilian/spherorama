@@ -9,7 +9,10 @@
 		    android:layout_width="fill_parent" 
 		    android:layout_height="wrap_content" 
 		    android:gravity="center"
-		    android:text="@string/hello"
+		    android:text="Purdue Virtual Tour Shooter"
+		    android:textSize="20sp"
+		    android:textColor="#FFFFFF"
+		    android:layout_marginTop="20dp"
 		    />
     <Button
       android:layout_width="fill_parent"
@@ -23,7 +26,7 @@
       android:layout_height="wrap_content"
       android:layout_marginTop="20dip"
       android:id="@+id/btn_settings"
-      android:text="Settings"
+      android:text="Server Settings"
       android:enabled="true"/>
       
     <Button

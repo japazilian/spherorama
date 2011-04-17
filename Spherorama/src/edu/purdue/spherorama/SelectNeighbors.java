@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,6 +20,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 public class SelectNeighbors extends Activity implements OnTouchListener, OnClickListener {
@@ -39,11 +41,9 @@ public class SelectNeighbors extends Activity implements OnTouchListener, OnClic
   		requestWindowFeature(Window.FEATURE_NO_TITLE); 
         setContentView(R.layout.select_attributes);
         ctx = this.getBaseContext();
-        /*btn_pos = (Button)findViewById(R.id.btn_pos);
-        btn_pos.setOnClickListener(this);
-        btn_pos.setEnabled(false);
-        btn_neighbors = (Button)findViewById(R.id.btn_neighbors);
-        btn_neighbors.setOnClickListener(this);*/
+        LinearLayout ll = (LinearLayout)findViewById(R.id.ll_attr);
+        ll.setGravity(Gravity.BOTTOM);
+        ll.setHorizontalGravity(Gravity.CENTER);
         Button btn_done = (Button)findViewById(R.id.btn_done);
         btn_done.setOnClickListener(this);
         img_map = (ImageView)findViewById(R.id.img_map);
