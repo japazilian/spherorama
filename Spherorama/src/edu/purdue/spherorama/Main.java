@@ -31,7 +31,6 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RemoteViews;
-import android.widget.Toast;
 
 public class Main extends Activity implements OnClickListener {
 	
@@ -297,7 +296,7 @@ public class Main extends Activity implements OnClickListener {
 					        
 					        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(zippedSphere));
 				            BufferedOutputStream bos = new BufferedOutputStream(socket.getOutputStream( ));
-				            byte[] byteArray = new byte[8192];
+				            byte[] byteArray = new byte[1024];
 				            int num;
 				            while ((num = bis.read(byteArray)) != -1){
 				                bos.write(byteArray,0,num);
