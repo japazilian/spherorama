@@ -30,12 +30,12 @@ public class PanoServer {
                 String password = in.readLine();
                 Date date = new Date();
                 if(password.equals(args[1])) {
-                	System.out.print(date.toString()+" - New client. ");
+                	System.out.println(date.toString()+" - New client.");
                 	System.out.println("From: "+incoming.getInetAddress());
                 	out.println("passed");
                 }
                 else {
-                	System.out.print(date.toString()+" - Password failed. ");
+                	System.out.println(date.toString()+" - Password failed: "+password);
                 	System.out.println("Attempt from: "+incoming.getInetAddress());
                 	out.println("failed");
                 	out.flush();
