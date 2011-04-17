@@ -3,16 +3,13 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Enumeration;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.util.Date;
 
 
 public class PanoServer {
@@ -31,14 +28,15 @@ public class PanoServer {
                 PrintWriter out = new PrintWriter(outStream, true /* autoFlush */);
                 
                 String password = in.readLine();
-                
+                Date date = new Date();
                 if(password.equals(args[1])) {
-                	System.out.println("New client");
+                	System.out.print(date.toString()+" - New client. ");
+                	System.out.println("From: "+incoming.getInetAddress());
                 	out.println("passed");
                 }
                 else {
-                	System.out.println("Password failed");
-                	System.out.println("attempt from: "+incoming.getInetAddress());
+                	System.out.print(date.toString()+" - Password failed. ");
+                	System.out.println("Attempt from: "+incoming.getInetAddress());
                 	out.println("failed");
                 	out.flush();
                 	in.close();
