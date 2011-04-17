@@ -50,7 +50,7 @@ public class PanoServer {
                 File f = new File(filename);
                 f.createNewFile();
                 
-                byte[] receivedData = new byte[8192];
+                byte[] receivedData = new byte[1024];
                 BufferedInputStream bis = new BufferedInputStream(incoming.getInputStream());
                 BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(f));
                 //length = bis.read(receivedData);
