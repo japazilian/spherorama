@@ -24,4 +24,4 @@ For running, modifying and committing:
     * I haven't tried this, but it is possible to use standard svn command line to checkout and commit code
       # use command in Source tab to checkout
       # Make changes as needed
-      # use 
+      # use svn commit to commit changes to repository
