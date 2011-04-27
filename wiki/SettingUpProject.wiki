@@ -1,0 +1,27 @@
+#summary How to set up the project for running/improvements
+
+= Introduction =
+
+The purpose of this page is for directions on how to download the source code for running or modifications. 
+
+
+= Steps =
+
+For running:
+  # Go to source tab on this website
+  # Execute svn command to download source
+  # (if you haven't already) Install Eclipse and Android SDK
+  # Import project into eclipse
+
+For running, modifying and committing:
+  # You will need permission to commit to this repository
+    * Talk to Prof. Gustavo about adding you under "members"
+  # Install Eclipse and Android SDK
+    * For easier access, I recommend installing an svn plugin known as subclipse that you can connect to the repository using the link in the Source tab. 
+      # Checkout code using plugin
+      # Make changes as needed
+      # To commit, right click on project, ->Team->commit
+    * I haven't tried this, but it is possible to use standard svn command line to checkout and commit code
+      # use command in Source tab to checkout
+      # Make changes as needed
+      # use 
