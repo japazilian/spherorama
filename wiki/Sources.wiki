@@ -1,0 +1,8 @@
+#summary Sources and tutorials used for this project.
+
+= List =
+
+  * [http://www.droidnova.com/android-3d-game-tutorial-part-i,312.html General OpenGL Tutorial]
+  * [http://www3.ntu.edu.sg/home/ehchua/programming/android/Android_3D.html More Advanced OpenGL Tutorial, explanation of using textures]
+  * [http://nhenze.net/?p=172 Using a camera preview as a texture]
+  * [http://hugin.sourceforge.net/ Hugin - stitching tool used in this project]
