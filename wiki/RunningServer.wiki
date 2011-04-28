@@ -1,0 +1,8 @@
+#summary How to run the java server
+
+= Directions =
+
+  # checkout the code for the server
+  # compile
+  # syntax is : {{{java PanoServer [port] [password]}}}
+    * e.g. {{{java PanoServer 3939 global}}}
